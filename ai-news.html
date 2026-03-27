@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI News — المساعد الذكي للإعلاميين</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f0e8;
+    --accent: #c8102e;
+    --accent2: #1a1a2e;
+    --gold: #d4a843;
+    --muted: #6b6560;
+    --border: #d0c9be;
+    --bubble-user: #0a0a0f;
+    --bubble-ai: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 28px),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    border-bottom: 3px solid var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    background: var(--accent);
+    color: white;
+    font-weight: 900;
+    font-size: 13px;
+    padding: 4px 8px;
+    letter-spacing: 1px;
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span {
+    color: var(--accent);
+  }
+
+  .header-tag {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--gold);
+    padding: 3px 10px;
+  }
+
+  /* MODES BAR */
+  .modes-bar {
+    background: var(--accent2);
+    display: flex;
+    gap: 2px;
+    padding: 10px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .modes-bar::-webkit-scrollbar { display: none; }
+
+  .mode-btn {
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 7px 16px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .mode-btn:hover, .mode-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  /* CHAT AREA */
+  .chat-area {
+    flex: 1;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 400px;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* WELCOME */
+  .welcome {
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeUp 0.6s ease;
+  }
+
+  .welcome-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .welcome h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+
+  .welcome p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto 32px;
+    line-height: 1.7;
+  }
+
+  /* QUICK PROMPTS */
+  .quick-prompts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .quick-btn {
+    background: white;
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--accent);
+    padding: 12px 16px;
+    text-align: right;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    transition: all 0.2s;
+    line-height: 1.5;
+  }
+
+  .quick-btn:hover {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  .quick-btn .q-icon {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  /* MESSAGES */
+  .message {
+    display: flex;
+    gap: 12px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .message.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .avatar.ai {
+    background: var(--accent);
+    color: white;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .avatar.user {
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 14px;
+  }
+
+  .bubble {
+    max-width: 75%;
+    padding: 14px 18px;
+    line-height: 1.75;
+    font-size: 14.5px;
+    border-radius: 2px;
+  }
+
+  .message.ai .bubble {
+    background: white;
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--accent);
+    color: var(--ink);
+  }
+
+  .message.user .bubble {
+    background: var(--ink);
+    color: var(--paper);
+    border-right: 3px solid var(--gold);
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 5px;
+    padding: 18px;
+    background: white;
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--accent);
+    width: fit-content;
+  }
+
+  .typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* API KEY NOTICE */
+  .api-notice {
+    background: white;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    padding: 16px 20px;
+    margin: 12px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .api-notice-icon { font-size: 20px; flex-shrink: 0; }
+  .api-notice p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .api-notice strong { color: var(--ink); }
+
+  .api-key-input-wrap {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .api-key-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 8px 12px;
+    font-family: monospace;
+    font-size: 13px;
+    direction: ltr;
+    background: var(--paper);
+  }
+
+  .api-key-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+
+  .btn-save-key {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 2px;
+  }
+  .btn-save-key:hover { background: #a00d24; }
+
+  /* INPUT BAR */
+  .input-bar {
+    padding: 16px 0 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .input-wrap {
+    display: flex;
+    gap: 10px;
+    background: white;
+    border: 1px solid var(--border);
+    border-bottom: 3px solid var(--accent);
+    padding: 8px 12px;
+    align-items: flex-end;
+  }
+
+  .input-wrap:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(200, 16, 46, 0.1);
+  }
+
+  textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    min-height: 44px;
+    max-height: 120px;
+    line-height: 1.6;
+    padding: 6px 0;
+  }
+
+  textarea::placeholder { color: var(--muted); }
+
+  .send-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .send-btn:hover { background: #a00d24; transform: scale(1.05); }
+  .send-btn:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+
+  /* FOOTER */
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    padding: 12px;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  footer span { color: var(--accent); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  @media (max-width: 600px) {
+    .quick-prompts { grid-template-columns: 1fr; }
+    .bubble { max-width: 88%; }
+    .welcome h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark">AI</span>
+    <span class="logo-text">News <span>مساعدك</span></span>
+  </div>
+  <span class="header-tag">للإعلاميين</span>
+</header>
+
+<div class="modes-bar">
+  <button class="mode-btn active" onclick="setMode(this, 'general')">🗞️ عام</button>
+  <button class="mode-btn" onclick="setMode(this, 'news')">✍️ كتابة الأخبار</button>
+  <button class="mode-btn" onclick="setMode(this, 'interview')">🎙️ المقابلات</button>
+  <button class="mode-btn" onclick="setMode(this, 'analysis')">🔍 تحليل المحتوى</button>
+  <button class="mode-btn" onclick="setMode(this, 'script')">🎬 السيناريو</button>
+  <button class="mode-btn" onclick="setMode(this, 'ethics')">⚖️ أخلاقيات الإعلام</button>
+</div>
+
+<div class="main">
+  <div class="chat-area" id="chatArea">
+
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-eyebrow">مدعوم بالذكاء الاصطناعي</div>
+      <h1>مساعدك الإعلامي<br>الذكي</h1>
+      <p>أداة متخصصة للصحفيين والإعلاميين — من كتابة الأخبار إلى التحضير للمقابلات وتحليل المحتوى</p>
+      <div class="quick-prompts">
+        <button class="quick-btn" onclick="quickSend('اكتب لي مقدمة خبر عاجل عن اجتماع طارئ لمجلس الأمن')">
+          <span class="q-icon">📰</span>
+          صِغ خبراً عاجلاً
+        </button>
+        <button class="quick-btn" onclick="quickSend('ساعدني في التحضير لمقابلة مع مسؤول حكومي يتهرب من الأسئلة')">
+          <span class="q-icon">🎙️</span>
+          تحضير مقابلة صعبة
+        </button>
+        <button class="quick-btn" onclick="quickSend('كيف أتحقق من صحة خبر منتشر على وسائل التواصل الاجتماعي؟')">
+          <span class="q-icon">🔍</span>
+          التحقق من الأخبار
+        </button>
+        <button class="quick-btn" onclick="quickSend('اقترح 5 زوايا تغطية مختلفة لخبر ارتفاع أسعار المواد الغذائية')">
+          <span class="q-icon">💡</span>
+          زوايا تغطية جديدة
+        </button>
+      </div>
+    </div>
+
+    <div class="api-notice" id="apiNotice">
+      <span class="api-notice-icon">🔑</span>
+      <div>
+        <p><strong>للبدء، أدخل مفتاح Anthropic API الخاص بك</strong><br>
+        يمكنك الحصول عليه مجاناً من <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> — مفتاحك يُحفظ في متصفحك فقط ولا يُرسل لأي خادم.</p>
+        <div class="api-key-input-wrap">
+          <input type="password" class="api-key-input" id="apiKeyInput" placeholder="sk-ant-..." />
+          <button class="btn-save-key" onclick="saveKey()">حفظ</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="input-bar">
+    <div class="input-wrap">
+      <textarea id="userInput" placeholder="اكتب سؤالك هنا... مثال: ساعدني في كتابة تقرير عن..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<footer>AI News — <span>مساعد إعلامي ذكي</span> | جميع المحادثات خاصة</footer>
+
+<script>
+  let apiKey = localStorage.getItem('ainews_key') || '';
+  let currentMode = 'general';
+  let conversationHistory = [];
+
+  const modePrompts = {
+    general: `أنت "AI News"، مساعد ذكاء اصطناعي متخصص للإعلاميين والصحفيين العرب. تتحدث بالعربية الفصحى البسيطة. تساعد في: كتابة الأخبار، تحليل المحتوى الإعلامي، التحضير للمقابلات، صياغة التقارير، والنصائح الإعلامية. كن دقيقاً ومحترفاً.`,
+    news: `أنت خبير في كتابة الأخبار الصحفية العربية. تساعد في صياغة الأخبار وفق الهرم المقلوب، كتابة العناوين الجذابة، والمقدمات الإخبارية القوية. استخدم لغة صحفية واضحة ومباشرة.`,
+    interview: `أنت خبير في فن المقابلات الإعلامية. تساعد الصحفيين في التحضير للمقابلات، صياغة الأسئلة، التعامل مع الشخصيات الصعبة، وتقنيات الاستجواب الصحفي المهني.`,
+    analysis: `أنت محلل إعلامي متخصص. تحلل المحتوى الصحفي، تكشف التحيزات، تقيّم جودة التغطية، وتساعد في فهم الأطر الإعلامية والخطاب الإعلامي.`,
+    script: `أنت خبير في كتابة سكريبتات الأخبار التلفزيونية والمرئية. تساعد في صياغة النصوص للمقدمين والمراسلين، بناء القصة المرئية، والتعليق على الصور والفيديو.`,
+    ethics: `أنت مرجع في أخلاقيات الإعلام والصحافة. تجيب على أسئلة حول المعايير المهنية، حماية المصادر، التعامل مع المعلومات الحساسة، وميثاق الشرف الصحفي.`
+  };
+
+  // Check if key exists
+  if (apiKey) {
+    document.getElementById('apiNotice').style.display = 'none';
+  } else {
+    document.getElementById('apiKeyInput').value = '';
+  }
+
+  function saveKey() {
+    const val = document.getElementById('apiKeyInput').value.trim();
+    if (!val.startsWith('sk-')) {
+      alert('يرجى إدخال مفتاح صحيح يبدأ بـ sk-');
+      return;
+    }
+    apiKey = val;
+    localStorage.setItem('ainews_key', val);
+    document.getElementById('apiNotice').style.display = 'none';
+    addMessage('ai', '✅ تم حفظ المفتاح! أنا جاهز لمساعدتك. كيف يمكنني خدمتك اليوم؟');
+  }
+
+  function setMode(btn, mode) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = mode;
+  }
+
+  function addMessage(role, text) {
+    const welcome = document.getElementById('welcomeScreen');
+    if (welcome) welcome.style.display = 'none';
+
+    const chatArea = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role}`;
+    avatar.textContent = role === 'ai' ? 'AI' : '👤';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = text.replace(/\n/g, '<br>');
+
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const chatArea = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'message ai';
+    div.id = 'typingIndicator';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ai';
+    avatar.textContent = 'AI';
+
+    const typing = document.createElement('div');
+    typing.className = 'typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+
+    div.appendChild(avatar);
+    div.appendChild(typing);
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+
+  async function sendMessage(text) {
+    const input = document.getElementById('userInput');
+    const userText = text || input.value.trim();
+    if (!userText) return;
+
+    if (!apiKey) {
+      document.getElementById('apiNotice').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    input.value = '';
+    autoResize(input);
+
+    addMessage('user', userText);
+    conversationHistory.push({ role: 'user', content: userText });
+
+    document.getElementById('sendBtn').disabled = true;
+    showTyping();
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          system: modePrompts[currentMode],
+          messages: conversationHistory
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        removeTyping();
+        addMessage('ai', `❌ خطأ: ${data.error.message}`);
+      } else {
+        const reply = data.content[0].text;
+        conversationHistory.push({ role: 'assistant', content: reply });
+        removeTyping();
+        addMessage('ai', reply);
+      }
+    } catch (err) {
+      removeTyping();
+      addMessage('ai', '❌ حدث خطأ في الاتصال. تحقق من المفتاح والاتصال بالإنترنت.');
+    }
+
+    document.getElementById('sendBtn').disabled = false;
+  }
+
+  function quickSend(text) {
+    document.getElementById('userInput').value = text;
+    sendMessage(text);
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+</script>
+</body>
+</html>
